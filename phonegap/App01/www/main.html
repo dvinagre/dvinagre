@@ -1,0 +1,191 @@
+﻿<!DOCTYPE html>
+<!--
+    Licensed to the Apache Software Foundation (ASF) under one
+    or more contributor license agreements.  See the NOTICE file
+    distributed with this work for additional information
+    regarding copyright ownership.  The ASF licenses this file
+    to you under the Apache License, Version 2.0 (the
+    "License"); you may not use this file except in compliance
+    with the License.  You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+    Unless required by applicable law or agreed to in writing,
+    software distributed under the License is distributed on an
+    "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+     KIND, either express or implied.  See the License for the
+    specific language governing permissions and limitations
+    under the License.
+-->
+<html>
+<head>
+    <meta charset="utf-8" />
+    <meta name="format-detection" content="telephone=no" />
+    <!-- WARNING: for iOS 7, remove the width=device-width and height=device-height attributes. See https://issues.apache.org/jira/browse/CB-4323 -->
+    <meta name="viewport" content="user-scalable=no, initial-scale=1, maximum-scale=1, minimum-scale=1, width=device-width, height=device-height, target-densitydpi=device-dpi" />
+    <link rel="stylesheet" type="text/css" href="css/index.css" />
+    <link rel="stylesheet" type="text/css" href="css/jquery.mobile-1.3.2.css" />
+    <title>Hello World</title>
+</head>
+<body>
+    <script type="text/javascript" src="js/index.js"></script>
+    <script type="text/javascript" src="js/jquery-1.10.2.js"></script>
+    <script type="text/javascript" src="js/jquery.mobile-1.3.2.js"></script>
+
+    <div data-role="header">
+        <h1>My Header</h1>
+    </div>
+    <div data-role="content" id="content"></div>
+    <div data-role="footer" data-position="fixed" class="nav-glyphish-example">
+        <div data-role="navbar" class="nav-glyphish-example" data-grid="c">
+            <ul>
+                <li><a href="#" onclick="showTab('C')" id="chat" data-icon="custom">Clientes</a></li>
+                <li><a href="#" onclick="showTab('O')" id="email" data-icon="custom">Oportunidades</a></li>
+                <li><a href="#" onclick="showTab('P')" id="skull" data-icon="custom">Projetos</a></li>
+                <li><a href="#" onclick="showTab('T')" id="beer" data-icon="custom">Tarefas</a></li>
+            </ul>
+        </div>
+    </div>
+    <div id="clientes" style="display: none;">
+        <div>
+            <label for="search-1">Search:</label>
+            <input name="search-1" id="search-1" value="" type="search">
+            <a href="#" data-role="button" onclick="queryEntidades()">Search</a>
+        </div>
+        <table data-role="table" id="table-custom-2" data-mode="" class="ui-body-d ui-shadow table-stripe ui-responsive" >
+            <thead>
+                <tr class="ui-bar-d">
+                    <th data-priority="2">Nome</th>
+                    <th>Movie Title</th>
+                    <th data-priority="3">Year</th>
+                    <th data-priority="1">
+                        <abbr title="Rotten Tomato Rating">Rating</abbr></th>
+                    <th data-priority="5">Reviews</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td colspan="5">Press search button</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+    <script type="text/javascript">
+        var sessionId;
+
+        function showTab(what) {
+            if (what == 'C') {
+                document.getElementById("content").innerText = document.getElementById("clientes");
+                document.getElementById("clientes").style.display = "block";
+            }
+
+        }
+        function queryEntidades()
+        {
+            ensureSessionId();
+            var entidadesXml = doSoapRequest("http://app.sendys.pt:7700/SendysCRM/WebServices/Cliente.asmx", "capgemini/crm/webservices/cliente/Query", buildRequest_Cliente_Query, queryEntidades_OnSuccess);
+        }
+        function queryEntidades_OnSuccess(data, status, req)
+        {
+            var response = $(req.responseXML);
+        }
+        function doSoapRequest(ws, soapAction, request, onSucess)
+        {
+            $.ajax({
+                type: "post",
+                url: ws,
+                async: false,
+                contentType: "text/xml;",
+                dataType: 'xml',
+                data: request(),
+                beforeSend: function (xhr) {
+                    // Pass the target URL onto the proxy.
+                    xhr.setRequestHeader(
+                    "SOAPTarget",
+                    ws
+                    );
+
+                    // Pass the action onto the proxy.
+                    xhr.setRequestHeader(
+                    "SOAPAction",
+                    soapAction
+                    );
+                },
+                error: function (jqXHR, text_status, strError) {
+                    alert(jqXHR + '\n' + text_status + '\n' + strError);
+                },
+                timeout: 60000,
+                success: onSucess 
+            });
+        }
+        
+
+        function ensureSessionId()
+        {
+            if (sessionId == '' || sessionId==undefined)
+                createSession();
+        }
+        function createSession()
+        {
+            var xml = doSoapRequest("http://app.sendys.pt:7700/SendysCRM/WebServices/SecurityManager.asmx", "capgemini.crm.webservices.securitymanager/Login", getLoginSoapRequest, createSession_OnSuccess)
+        }
+        function createSession_OnSuccess(data, status, req) {
+            var response = $(req.responseXML);
+            sessionId = response.find("Token").text();
+        }
+        function getLoginSoapRequest()
+        {
+            return '\
+<?xml version="1.0" encoding="utf-8"?>\
+<soap:Envelope xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/">\
+<soap:Body>\
+<Login xmlns="capgemini.crm.webservices.securitymanager">\
+<Login_Input>\
+<Username>wsUser1</Username>\
+<Password>oen6DlnaTGgsQ</Password>\
+</Login_Input>\
+</Login>\
+</soap:Body>\
+</soap:Envelope>';
+        }
+        function buildRequest_Cliente_QueryByNome() {
+            return '\
+<?xml version="1.0" encoding="utf-8"?>\
+<soap:Envelope xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/">\
+  <soap:Header>\
+    <AuthenticationHeader xmlns="capgemini/crm/webservices/cliente">\
+      <TokenId>' + sessionId + '</TokenId>\
+    </AuthenticationHeader>\
+  </soap:Header>\
+  <soap:Body>\
+    <QueryByNome xmlns="capgemini/crm/webservices/cliente">\
+      <input>\
+        <Nome>' + $("#search-1") + '</Nome>\
+      </input>\
+    </QueryByNome>\
+  </soap:Body>\
+</soap:Envelope>';
+        }
+        function buildRequest_Cliente_Query() {
+            return '\
+<?xml version="1.0" encoding="utf-8"?>\
+<soap:Envelope xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/">\
+  <soap:Header>\
+    <AuthenticationHeader xmlns="capgemini/crm/webservices/cliente">\
+      <TokenId>' + sessionId + '</TokenId>\
+    </AuthenticationHeader>\
+  </soap:Header>\
+  <soap:Body>\
+    <Query xmlns="capgemini/crm/webservices/cliente">\
+      <input>\
+        <Filters>\
+        <Nome>' + $("#search-1") + '</Nome>\
+        </Filters>\
+      </input>\
+    </Query>\
+  </soap:Body>\
+</soap:Envelope>';
+        }
+    </script>
+</body>
+</html>

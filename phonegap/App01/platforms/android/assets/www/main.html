@@ -1,0 +1,129 @@
+﻿<!DOCTYPE html>
+<!--
+    Licensed to the Apache Software Foundation (ASF) under one
+    or more contributor license agreements.  See the NOTICE file
+    distributed with this work for additional information
+    regarding copyright ownership.  The ASF licenses this file
+    to you under the Apache License, Version 2.0 (the
+    "License"); you may not use this file except in compliance
+    with the License.  You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+    Unless required by applicable law or agreed to in writing,
+    software distributed under the License is distributed on an
+    "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+     KIND, either express or implied.  See the License for the
+    specific language governing permissions and limitations
+    under the License.
+-->
+<html>
+<head>
+    <meta charset="utf-8" />
+    <meta name="format-detection" content="telephone=no" />
+    <!-- WARNING: for iOS 7, remove the width=device-width and height=device-height attributes. See https://issues.apache.org/jira/browse/CB-4323 -->
+    <meta name="viewport" content="user-scalable=no, initial-scale=1, maximum-scale=1, minimum-scale=1, width=device-width, height=device-height, target-densitydpi=device-dpi" />
+    <link rel="stylesheet" type="text/css" href="css/index.css" />
+    <link rel="stylesheet" type="text/css" href="css/jquery.mobile-1.3.2.css" />
+    <title>Hello World</title>
+</head>
+<body>
+    <script type="text/javascript" src="js/index.js"></script>
+    <script type="text/javascript" src="js/jquery-1.10.2.js"></script>
+    <script type="text/javascript" src="js/jquery.mobile-1.3.2.js"></script>
+
+    <div data-role="header">
+        <h1>My Header</h1>
+    </div>
+    <div data-role="content" id="content"></div>
+    <div data-role="footer" data-position="fixed" class="nav-glyphish-example">
+        <div data-role="navbar" class="nav-glyphish-example" data-grid="c">
+            <ul>
+                <li><a href="#" onclick="showTab('C')" id="chat" data-icon="custom">Clientes</a></li>
+                <li><a href="#" onclick="showTab('O')" id="email" data-icon="custom">Oportunidades</a></li>
+                <li><a href="#" onclick="showTab('P')" id="skull" data-icon="custom">Projetos</a></li>
+                <li><a href="#" onclick="showTab('T')" id="beer" data-icon="custom">Tarefas</a></li>
+            </ul>
+        </div>
+    </div>
+    <div id="clientes" style="display: none;">
+        <div>
+            <label for="search-1">Search:</label>
+            <input name="search-1" id="search-1" value="" type="search">
+            <a href="#" data-role="button" onclick="createSession()">Search</a>
+        </div>
+        <table data-role="table" id="table-custom-2" data-mode="" class="ui-body-d ui-shadow table-stripe ui-responsive" >
+            <thead>
+                <tr class="ui-bar-d">
+                    <th data-priority="2">Nome</th>
+                    <th>Movie Title</th>
+                    <th data-priority="3">Year</th>
+                    <th data-priority="1">
+                        <abbr title="Rotten Tomato Rating">Rating</abbr></th>
+                    <th data-priority="5">Reviews3</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td colspan="5">Press search button</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+    <script type="text/javascript">
+        function showTab(what) {
+            if (what == 'C') {
+                document.getElementById("content").innerText = document.getElementById("clientes");
+                document.getElementById("clientes").style.display = "block";
+            }
+
+        }
+        function createSession()
+        {
+            $.ajax({
+                type: "post",
+                url: "http://app.sendys.pt:7700/SendysCRM/WebServices/SecurityManager.asmx",
+                contentType: "text/xml",
+                dataType: 'xml',
+                data: getLoginSoapRequest(),
+                beforeSend: function (xhr) {
+                    // Pass the target URL onto the proxy.
+                    xhr.setRequestHeader(
+                    "SOAPTarget",
+                    "http://app.sendys.pt:7700/SendysCRM/WebServices/SecurityManager.asmx"
+                    );
+
+                    // Pass the action onto the proxy.
+                    xhr.setRequestHeader(
+                    "SOAPAction",
+                    "capgemini.crm.webservices.securitymanager/Login"
+                    );
+                },
+                error:function(jqXHR,text_status,strError){
+                    alert(jqXHR + '\n' + text_status + '\n' + strError);
+                },
+                timeout:60000,
+                success:function(data){
+                    alert(data);
+                }
+            });
+        }
+        function getLoginSoapRequest()
+        {
+            return ' \
+<?xml version="1.0" encoding="utf-8"?> \
+<soap:Envelope xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/"> \
+  <soap:Body> \
+    <Login xmlns="capgemini.crm.webservices.securitymanager"> \
+      <Login_Input> \
+        <Username>wsUser1</Username> \
+        <Password>Password01</Password> \
+      </Login_Input> \
+    </Login> \
+  </soap:Body> \
+</soap:Envelope>';
+        }
+
+    </script>
+</body>
+</html>
